@@ -21,7 +21,7 @@ License:        {license}
 URL:            {url}
 Source0:        {crate_name}-{version}-vendored.tar.gz
 
-BuildRequires:  rust cargo
+BuildRequires:  {deps}
 
 %description
 {description}
@@ -133,10 +133,14 @@ def prepare_offline_source(crate_name, version, dest_dir):
 def main():
     parser = argparse.ArgumentParser(description="Generate vendored source and spec for COPR.")
     parser.add_argument("crate_name", help="Name of the crate on crates.io")
+    parser.add_argument("build_deps", help="Build time system dependencies", nargs='*')
     args = parser.parse_args()
 
     crate_name = args.crate_name
+    deps = args.build_deps
     cwd = os.getcwd()
+    deps.append("cargo")
+    deps.append("rust")
     
     print(f"Collecting metadata {crate_name}")
     crate_data = fetch_crate_metadata(crate_name)
@@ -159,7 +163,8 @@ def main():
         description=description,
         license=license_str,
         url=url,
-        date=date
+        date=date,
+        deps=" ".join(deps)
     )
     
     spec_file_path = os.path.join(cwd, f"{crate_name}.spec")
